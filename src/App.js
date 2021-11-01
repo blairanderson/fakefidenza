@@ -3,6 +3,7 @@ import p5 from "p5";
 import md5 from "crypto-js/md5";
 import Fidenza from "./fidenza";
 import useDebounce from './useDebounce';
+import queryString from 'query-string';
 
 const makeid = (length) => {
   var result = '';
@@ -16,10 +17,18 @@ const makeid = (length) => {
 }
 
 function App() {
-  const [slowToken, changeHash] = React.useState("FAKE FIDENZA");
-  const updateHash = (e) => changeHash(e.target.value);
+  const parsed = queryString.parse(window.location.search);
+
+  const [slowToken, changeHash] = React.useState(
+    parsed.token || "FAKE FIDENZA"
+  );
+
+
+  const updateHash = React.useMemo(() => {
+    return (e) => changeHash(e.target.value);
+  })
   const debouncedToken = useDebounce(slowToken, 500);
-  const hashToken = md5(debouncedToken).toString().substring(0,5) + debouncedToken;
+  const hashToken = md5(debouncedToken).toString().substring(0, 5) + debouncedToken;
   const [loading, setLoading] = React.useState(false);
   const [imgs, updateImg] = React.useState([]);
   const myRef = useRef(null);
@@ -35,7 +44,7 @@ function App() {
         if (!Object.values(imgs).includes(dataURL)) {
           const newState = {};
           newState[hashToken] = dataURL;
-          updateImg(Object.assign(newState, imgs))
+          updateImg(Object.assign({}, imgs, newState))
         }
       }
     })
