@@ -1,5 +1,6 @@
 import React, {useRef} from "react";
 import p5 from "p5";
+import md5 from "crypto-js/md5";
 import Fidenza from "./fidenza";
 import useDebounce from './useDebounce';
 
@@ -15,18 +16,22 @@ const makeid = (length) => {
 }
 
 function App() {
-  const [slowToken, changeHash] = React.useState("0xDONNY");
+  const [slowToken, changeHash] = React.useState("FAKE FIDENZA");
   const updateHash = (e) => changeHash(e.target.value);
-  const hashToken = useDebounce(slowToken, 500);
+  const debouncedToken = useDebounce(slowToken, 500);
+  const hashToken = md5(debouncedToken).toString().substring(0,5) + debouncedToken;
   const [loading, setLoading] = React.useState(false);
-  const [imgs, updateImg] = React.useState({});
+  const [imgs, updateImg] = React.useState([]);
   const myRef = useRef(null);
 
   const Sketch = React.useMemo(() => {
     return Fidenza(hashToken, () => {
       setLoading(false)
-      if (!imgs.hasOwnProperty(hashToken) && myRef.current.children[0] && typeof myRef.current.children[0].toDataURL === 'function') {
+      if (myRef.current.children[0] && typeof myRef.current.children[0].toDataURL === 'function') {
         const dataURL = myRef.current.children[0].toDataURL("image/png");
+        // ODDLY ENOUGH, the fidenza algorithm, is not infinitely unique based on text input.
+        // For Example "0" and "00" and "001 will produce the same results.
+        //
         if (!Object.values(imgs).includes(dataURL)) {
           const newState = {};
           newState[hashToken] = dataURL;
@@ -45,19 +50,30 @@ function App() {
     }
   }, [Sketch, hashToken, imgs]);
 
+  const moreLoading = loading || (slowToken !== debouncedToken);
+
   return (
     <div className="container">
       <div className={"row"}>
-        <div className={`col-6 ${loading ? 'opacity-0' : 'opacity-100'}`}>
-          <div id={"cheesy-taco"} ref={myRef}/>
+        <div className={`col-6`}>
+          {moreLoading ? <h1>Loading...</h1> : ''}
+          <div style={{opacity: moreLoading ? 0 : 1}} id={"cheesy-taco"} ref={myRef}/>
         </div>
-
         <div className="col-6">
           <div className="row">
-            <div className="col">
+            <div className="col-6">
               <input className="form-control" value={slowToken} onChange={updateHash} type='text'/>
-              Loading: {loading.toString()}
             </div>
+            <div className="col-6">
+              <button onClick={(e) => {
+                changeHash(makeid(66));
+              }} className={'btn btn-outline-success'}>Randomize
+              </button>
+            </div>
+          </div>
+          <div className="row">
+            Loading: {loading.toString()} <br/>
+            MoreLoading: {moreLoading.toString()}
           </div>
           <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
             {Object.entries(imgs).map((el) => {
@@ -66,7 +82,7 @@ function App() {
               return (<div className={"card"} key={token}>
                 <img className="card-img-top" src={src}/>
                 <div className="card-body">
-                  <p className="card-text">{token}</p>
+                  <p title={token} className="card-text text-truncate">{token}</p>
                 </div>
               </div>)
             })}
