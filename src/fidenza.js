@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const maxSize = 2000;
 const tokenData = {hash: "0x"};
 let drawCallback = () => {}
