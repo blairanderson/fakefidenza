@@ -26,9 +26,7 @@ function App() {
     parsed.token || "FAKE FIDENZA"
   );
 
-  const updateHash = React.useMemo(() => {
-    return (e) => changeHash(e.target.value);
-  })
+  const updateHash = (e) => changeHash(e.target.value);
 
   const debouncedToken = useDebounce(slowToken, 500);
   // ODDLY ENOUGH, the fidenza algorithm, is not infinitely unique based on text input.
@@ -56,7 +54,7 @@ function App() {
         }
       }
     })
-  }, [hashToken, debouncedToken])
+  }, [imgs, hashToken, debouncedToken])
 
   React.useEffect(() => {
     if (myRef.current.dataset.hashToken !== hashToken) {
@@ -100,7 +98,7 @@ function App() {
           <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
             {sorted.map(({text, hashToken, dataURL}) => {
               return (<div className={"card"} key={hashToken}>
-                <img className="card-img-top" src={dataURL}/>
+                <img alt={`A photo of algorithmically generated shapes of colors using seed data: ${text}`} className="card-img-top" src={dataURL}/>
                 <div className="card-body">
                   <p title={hashToken} className="card-text text-truncate">{text}</p>
                 </div>
