@@ -17,38 +17,46 @@ const makeid = (length) => {
 }
 
 function App() {
+  const myRef = useRef(null);
+
+  const [imgs, updateImg] = React.useState([]);
   const parsed = queryString.parse(window.location.search);
 
   const [slowToken, changeHash] = React.useState(
     parsed.token || "FAKE FIDENZA"
   );
 
-
   const updateHash = React.useMemo(() => {
     return (e) => changeHash(e.target.value);
   })
+
   const debouncedToken = useDebounce(slowToken, 500);
-  const hashToken = md5(debouncedToken).toString().substring(0, 5) + debouncedToken;
+  // ODDLY ENOUGH, the fidenza algorithm, is not infinitely unique based on text input.
+  // For Example "0" and "00" and "001 will produce the same results.
+  const hashToken = `0x${md5(debouncedToken).toString().substring(0, 5)}${debouncedToken}`;
   const [loading, setLoading] = React.useState(false);
-  const [imgs, updateImg] = React.useState([]);
-  const myRef = useRef(null);
+  const moreLoading = loading || (slowToken !== debouncedToken);
 
   const Sketch = React.useMemo(() => {
     return Fidenza(hashToken, () => {
       setLoading(false)
       if (myRef.current.children[0] && typeof myRef.current.children[0].toDataURL === 'function') {
-        const dataURL = myRef.current.children[0].toDataURL("image/png");
-        // ODDLY ENOUGH, the fidenza algorithm, is not infinitely unique based on text input.
-        // For Example "0" and "00" and "001 will produce the same results.
-        //
-        if (!Object.values(imgs).includes(dataURL)) {
-          const newState = {};
-          newState[hashToken] = dataURL;
-          updateImg(Object.assign({}, imgs, newState))
+        const exists = imgs.find((el) => {
+          return el.hashToken === hashToken
+        })
+
+        if (!exists) {
+          const dataURL = myRef.current.children[0].toDataURL("image/png");
+          updateImg(imgs.concat({
+            text: debouncedToken,
+            created: new Date(),
+            hashToken,
+            dataURL
+          }))
         }
       }
     })
-  }, [hashToken])
+  }, [hashToken, debouncedToken])
 
   React.useEffect(() => {
     if (myRef.current.dataset.hashToken !== hashToken) {
@@ -59,7 +67,12 @@ function App() {
     }
   }, [Sketch, hashToken, imgs]);
 
-  const moreLoading = loading || (slowToken !== debouncedToken);
+  const sorted = React.useMemo(() => {
+    return imgs.sort((a,b) => {
+      return b.created - a.created;
+    });
+  }, [imgs])
+
 
   return (
     <div className="container">
@@ -85,13 +98,11 @@ function App() {
             MoreLoading: {moreLoading.toString()}
           </div>
           <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-            {Object.entries(imgs).map((el) => {
-              const token = el[0];
-              const src = el[1];
-              return (<div className={"card"} key={token}>
-                <img className="card-img-top" src={src}/>
+            {sorted.map(({text, hashToken, dataURL}) => {
+              return (<div className={"card"} key={hashToken}>
+                <img className="card-img-top" src={dataURL}/>
                 <div className="card-body">
-                  <p title={token} className="card-text text-truncate">{token}</p>
+                  <p title={hashToken} className="card-text text-truncate">{text}</p>
                 </div>
               </div>)
             })}
