@@ -100,7 +100,7 @@ function App() {
               return (<div className={"card"} key={hashToken}
                 onClick={(e) => {
                   e.preventDefault();
-                  changeHash(hashToken);
+                  changeHash(text);
               }}>
                 <img alt={`algorithmically generated shapes of colors using seed data: ${text}`} className="card-img-top" src={dataURL}/>
                 <div className="card-body">
