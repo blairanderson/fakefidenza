@@ -97,7 +97,11 @@ function App() {
           </div>
           <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
             {sorted.map(({text, hashToken, dataURL}) => {
-              return (<div className={"card"} key={hashToken}>
+              return (<div className={"card"} key={hashToken}
+                onClick={(e) => {
+                  e.preventDefault();
+                  changeHash(hashToken);
+              }}>
                 <img alt={`algorithmically generated shapes of colors using seed data: ${text}`} className="card-img-top" src={dataURL}/>
                 <div className="card-body">
                   <p title={hashToken} className="card-text text-truncate">{text}</p>
