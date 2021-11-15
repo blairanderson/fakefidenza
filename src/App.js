@@ -1,25 +1,27 @@
-import React, {useRef} from "react";
+import * as React from "react";
 import p5 from "p5";
 import md5 from "crypto-js/md5";
 import Fidenza from "./fidenza";
 import useDebounce from './useDebounce';
 import queryString from 'query-string';
 import Desktop from "./Desktop";
+import Footer from "./Footer";
 
 function App() {
-  const myRef = useRef(null);
+  // p5 reference
+  const myRef = React.useRef(null);
 
   const [imgs, updateImg] = React.useState([]);
   const parsed = queryString.parse(window.location.search);
 
   const [slowToken, changeHash] = React.useState(
-    parsed.token || "FAKE FIDENZA"
+    parsed.token || "FAUXDENZA"
   );
 
   const updateHash = (e) => changeHash(e.target.value);
 
   const debouncedToken = useDebounce(slowToken, 500);
-  // ODDLY ENOUGH, the fidenza algorithm, is not infinitely unique based on text input.
+  // ODDLY ENOUGH, the fidenza algorithm is not infinitely unique based on text input.
   // For Example "0" and "00" and "001 will produce the same results.
   const hashToken = `0x${md5(debouncedToken).toString().substring(0, 5)}${debouncedToken}`;
   const [loading, setLoading] = React.useState(false);
@@ -46,7 +48,14 @@ function App() {
     })
   }, [imgs, hashToken, debouncedToken])
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set("token", debouncedToken);
+    const newRelativePathQuery = window.location.pathname + '?' + searchParams.toString();
+    window.history.pushState(null, `Fauxdenza ${debouncedToken}`, newRelativePathQuery);
+  }, [debouncedToken])
+
+  React.useLayoutEffect(() => {
     if (myRef.current.dataset.hashToken !== hashToken) {
       setLoading(true)
       myRef.current.innerHTML = "";
@@ -71,7 +80,12 @@ function App() {
     changeHash
   }
 
-  return (<Desktop {...renderProps} />);
+  return (<>
+    <div className="">
+      <Desktop {...renderProps} />
+    </div>
+    <Footer {...renderProps} />
+  </>);
 }
 
 export default App;

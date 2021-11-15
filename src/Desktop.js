@@ -1,41 +1,19 @@
 import * as React from "react";
 
-const makeid = (length) => {
-  var result = '';
-  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for (var i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() *
-      charactersLength));
-  }
-  return result;
-}
+function Desktop({moreLoading, myRef, sorted, slowToken, updateHash, changeHash}) {
+  const actualCanvas = (
+    <div style={{opacity: moreLoading ? 0 : 1}} id={"cheesy-taco"} ref={myRef}/>
+  );
 
-function Desktop({loading, moreLoading, myRef, sorted, slowToken, updateHash, changeHash}) {
   return (
     <div className="container">
-      <div className={"row"}>
-        <div className={`col-6`}>
-          {moreLoading ? <h1>Loading...</h1> : ''}
-          <div style={{opacity: moreLoading ? 0 : 1}} id={"cheesy-taco"} ref={myRef}/>
-        </div>
-        <div className="col-6">
-          <div className="row">
-            <div className="col-6">
-              <input className="form-control" value={slowToken} onChange={updateHash} type='text'/>
-            </div>
-            <div className="col-6">
-              <button onClick={(e) => {
-                changeHash(makeid(66));
-              }} className={'btn btn-outline-success'}>Randomize
-              </button>
-            </div>
-          </div>
-          <div className="row">
-            Loading: {loading.toString()} <br/>
-            MoreLoading: {moreLoading.toString()}
-          </div>
-          <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+      <div className="row">
+        {moreLoading ? <h1>Loading...</h1> : ''}
+        {actualCanvas}
+      </div>
+      <div className="row">
+        <div className="col">
+          <div className="row row-cols-3 row-cols-sm-6 row-cols-md-9 g-3">
             {sorted.map(({text, hashToken, dataURL}) => {
               return (<div className={"card"} key={hashToken}
                            onClick={(e) => {
@@ -49,11 +27,32 @@ function Desktop({loading, moreLoading, myRef, sorted, slowToken, updateHash, ch
                 </div>
               </div>)
             })}
+            <div className="card">
+              <div className="card-body">
+                <button onClick={(e) => {
+                  e.preventDefault();
+                  changeHash(makeId(24));
+                }} className={'btn btn-block btn-outline-success'}>Randomize
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
     </div>
   );
 }
 
 export default Desktop;
+
+function makeId(length) {
+  var result = '';
+  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() *
+      charactersLength));
+  }
+  return result;
+}

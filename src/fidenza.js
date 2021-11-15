@@ -143,6 +143,7 @@ function drawSketch(sketch) {
       : ((wh = windowHeight), (ww = windowHeight / 1.2)),
       (wr = ww / dw),
       (c = sketch.createCanvas(ww, wh)),
+      c.class("img-fluid"),
       sketch.colorMode(sketch.HSB, 360, 100, 100, 100),
       set_seed(tokenData.hash),
       sketch.randomSeed(0),
